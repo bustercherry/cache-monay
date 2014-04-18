@@ -1,3 +1,10 @@
+
+typedef struct
+{
+	
+} cache_stats_t;
+
+
 typedef struct
 {
   int blockSize;
@@ -11,5 +18,7 @@ typedef struct
   unsigned long long tagMask;
   unsigned long long indexMask;
   unsigned long long offsetMask;
+  
+  cache_stats_t cache_stats;
 
 } cache_t;
