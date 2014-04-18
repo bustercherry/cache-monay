@@ -8,7 +8,8 @@ typedef struct
   int transferTime;
   int busWidth;
 
-  int tagMask;
-  int indexMask;
+  unsigned long long tagMask;
+  unsigned long long indexMask;
+  unsigned long long offsetMask;
 
 } cache_t;
