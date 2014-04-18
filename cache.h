@@ -2,7 +2,7 @@ typedef struct
 {
   int blockSize;
   int cacheSize;
-  int asoc;
+  int assoc;
   int hitTime;
   int missTime;
   int transferTime;
