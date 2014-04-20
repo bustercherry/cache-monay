@@ -1,10 +1,13 @@
 #include "cache.h"
 #include <stdio.h>
+#include <math.h>
 
 #define HIT 1
 #define MISS 0
 
 cache_t L1d, L1i, L2;
+
+int numRead, numWrite, numInst;
 
 void initCache(char *config_file)
 {
@@ -18,7 +21,7 @@ void initCache(char *config_file)
     L1d.transferTime  =    0;
     L1d.busWidth      =    0;
 
-	L1d.tagMask       = 0x0007FFFFFFFFFFFF;
+    L1d.tagMask       = 0x0007FFFFFFFFFFFF;
     L1d.indexMask     = 0x00000000000000FF;
     L1d.offsetMask    = 0x000000000000001F;
     
@@ -60,43 +63,54 @@ void initCache(char *config_file)
   }
 }
 
-int calculateCache(cache_t cache, char op, unsigned long long address, int bytes)
+int calculateCache(char op, unsigned long long address, int bytes)
 {
   switch(op)
   {
     case 'I': 
-      return calculateInstruction(cache, op, address, bytes);
+      return calculateInstruction(L1i, op, address, bytes);
     case 'R':
-      return calculateRead(cache, op, address, bytes);
+      return calculateRead(L1d, op, address, bytes);
     case 'W':
-      return calculateWrite(cache, op, address, bytes);
-	default:
-	  return 0;
+      return calculateWrite(L1d, op, address, bytes);
+    default:
+      return 0;
   }
 }
 
 int calculateInstruction(cache_t cache, char op, unsigned long long address, int bytes)
 {
 	unsigned long long tag = (address >> (64 - cache.tagSize));
-	unsigned long long index = (address >> cache.offsetSize) & cache.indexMask;
-	unsigned long long offset = address & cache.offsetMask;
-	
-	
-	printf("Cache tag size = %d\n", cache.tagSize);
-	printf("Address = %Lx\n", address >> (64 - cache.tagSize));
-	printf("Tag = %Lx, Index = %Lx, Offset = %Lx\n", tag, index, offset);
-	
-	
+	unsigned short index = (address >> cache.offsetSize) & cache.indexMask;
+	unsigned short offset = address & cache.offsetMask;
+
+	printf("Ref Type = Inst, Tag = %Lx, Index = %d, Offset = %d\n", tag, index, offset);
+
+  numInst++;
 	return MISS;
 }
 
 int calculateRead(cache_t cache, char op, unsigned long long address, int bytes)
 {
+	unsigned long long tag = (address >> (64 - cache.tagSize));
+	unsigned short index = (address >> cache.offsetSize) & cache.indexMask;
+	unsigned short offset = address & cache.offsetMask;
+
+	printf("Ref Type = Read, Tag = %Lx, Index = %d, Offset = %d\n", tag, index, offset);
+
+  numRead++;
 	return MISS;
 }
 
 int calculateWrite(cache_t cache, char op, unsigned long long address, int bytes)
 {
+	unsigned long long tag = (address >> (64 - cache.tagSize));
+	unsigned short index = (address >> cache.offsetSize) & cache.indexMask;
+	unsigned short offset = address & cache.offsetMask;
+
+	printf("Ref Type = Write, Tag = %Lx, Index = %d, Offset = %d\n", tag, index, offset);
+
+  numWrite++;
 	return MISS;
 }
 
@@ -104,20 +118,37 @@ int main()
 {
 	
   initCache(NULL);
-  unsigned long long add = 0x3c1ee00b00;
   
-  calculateCache(L1d, 'I', add, 3);
-  calculateCache(L2, 'I', add, 3);
+  char op;
+  unsigned long long address;
+  int bytes, ret;
+
+  while(scanf("%c %Lx %d\n", &op, &address, &bytes) == 3) 
+  {
   
-
-  //char op;
-  //unsigned long long address;
-  //int bytes;
-
-  //while(scanf("%c %Lx %d\n", &op, &address, &bytes) == 3) 
-  //{
-
-  //}
+    switch(op)
+    {
+      case 'I': 
+        ret = calculateInstruction(L1i, op, address, bytes);
+        //if(ret == MISS) calculateInstruction(L2, op, address, bytes);
+        break;
+      case 'R':
+        ret = calculateRead(L1d, op, address, bytes);
+        //if(ret == MISS) calculateRead(L2, op, address, bytes);
+        break;
+      case 'W':
+        ret = calculateWrite(L1d, op, address, bytes);
+        //if(ret == MISS) calculateWrite(L2, op, address, bytes);
+        break;
+    }
+    
+  }
+  
+  float total = numRead + numWrite + numInst;
+  
+  printf("Number of reads:  %d    [%0.2f%%]   \n", numRead, 100 * (numRead/total));
+  printf("Number of writes: %d     [%0.2f%%]   \n", numWrite, 100 * (numWrite/total));
+  printf("Number of inst:   %d    [%0.2f%%]   \n", numInst, 100 * (numInst/total));
 
   return 0;
 }
