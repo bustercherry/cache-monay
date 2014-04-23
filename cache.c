@@ -57,23 +57,26 @@ void initCache(char *config_file)
   }
 }
 
-int calculateInstruction(cache_t cache, char op, unsigned long long address, int bytes)
+int calculateInstruction(cache_t *cache, char op, unsigned long long address, int bytes)
 {
-	volatile unsigned long long tag = (address >> (64 - cache.tagSize));
-	volatile unsigned short index = (address >> cache.offsetSize) & cache.indexMask;
-	volatile unsigned short offset = address & cache.offsetMask;
+	volatile unsigned long long tag = (address >> (64 - cache->tagSize));
+	volatile unsigned short index = (address >> cache->offsetSize) & cache->indexMask;
+	volatile unsigned short offset = address & cache->offsetMask;
 
 	printf("Ref Type = Inst, Tag = %Lx, Index = %d, Offset = %d\n", tag, index, offset);
 
-  numInst++;
-	return MISS;
+  if(cache->entries[index]->tag == tag)
+    return cache->hitTime;
+  else
+    return cache->missTime + cache->transferTime 
+         + calculateInstruction(cache->nextLevel, op, address, bytes);
 }
 
-int calculateRead(cache_t cache, char op, unsigned long long address, int bytes)
+int calculateRead(cache_t *cache, char op, unsigned long long address, int bytes)
 {
-	volatile unsigned long long tag = (address >> (64 - cache.tagSize));
-	volatile unsigned short index = (address >> cache.offsetSize) & cache.indexMask;
-	volatile unsigned short offset = address & cache.offsetMask;
+	volatile unsigned long long tag = (address >> (64 - cache->tagSize));
+	volatile unsigned short index = (address >> cache->offsetSize) & cache->indexMask;
+	volatile unsigned short offset = address & cache->offsetMask;
 
 	printf("Ref Type = Read, Tag = %Lx, Index = %d, Offset = %d\n", tag, index, offset);
 
@@ -81,11 +84,11 @@ int calculateRead(cache_t cache, char op, unsigned long long address, int bytes)
 	return MISS;
 }
 
-int calculateWrite(cache_t cache, char op, unsigned long long address, int bytes)
+int calculateWrite(cache_t *cache, char op, unsigned long long address, int bytes)
 {
-	volatile unsigned long long tag = (address >> (64 - cache.tagSize));
-	volatile unsigned short index = (address >> cache.offsetSize) & cache.indexMask;
-	volatile unsigned short offset = address & cache.offsetMask;
+	volatile unsigned long long tag = (address >> (64 - cache->tagSize));
+	volatile unsigned short index = (address >> cache->offsetSize) & cache->indexMask;
+	volatile unsigned short offset = address & cache->offsetMask;
 
 	printf("Ref Type = Write, Tag = %Lx, Index = %d, Offset = %d\n", tag, index, offset);
 
@@ -108,15 +111,15 @@ int main()
     switch(op)
     {
       case 'I': 
-        ret = calculateInstruction(L1i, op, address, bytes);
+        ret = calculateInstruction(&L1i, op, address, bytes);
         //if(ret == MISS) calculateInstruction(L2, op, address, bytes);
         break;
       case 'R':
-        ret = calculateRead(L1d, op, address, bytes);
+        ret = calculateRead(&L1d, op, address, bytes);
         //if(ret == MISS) calculateRead(L2, op, address, bytes);
         break;
       case 'W':
-        ret = calculateWrite(L1d, op, address, bytes);
+        ret = calculateWrite(&L1d, op, address, bytes);
         //if(ret == MISS) calculateWrite(L2, op, address, bytes);
         break;
     }

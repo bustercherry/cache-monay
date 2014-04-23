@@ -1,3 +1,11 @@
+typedef struct cache_entry_t cache_entry_t;
+struct cache_entry_t
+{
+	unsigned long long tag;
+	unsigned short valid;
+	unsigned short dirty;
+};
+
 typedef struct cache_t cache_t;
 struct cache_t
 {
@@ -15,16 +23,8 @@ struct cache_t
   int tagSize;
   int offsetSize;
 
+  cache_entry_t *entries;
   cache_t *nextLevel;
-};
-
-typedef struct cache_entry_t cache_entry_t;
-struct cache_entry_t
-{
-	unsigned short index;
-	unsigned long long tag;
-	unsigned short valid;
-	unsigned short dirty;
 };
 
 
