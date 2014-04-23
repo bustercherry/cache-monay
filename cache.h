@@ -1,4 +1,5 @@
-typedef struct
+typedef struct cache_t cache_t;
+struct cache_t
 {
   int blockSize;
   int cacheSize;
@@ -8,25 +9,23 @@ typedef struct
   int transferTime;
   int busWidth;
 
-  unsigned long long tagMask;
   unsigned long long indexMask;
   unsigned long long offsetMask;
   
   int tagSize;
-  int indexSize;
   int offsetSize;
 
-} cache_t;
+  cache_t *nextLevel;
+};
 
-
-typedef struct
+typedef struct cache_entry_t cache_entry_t;
+struct cache_entry_t
 {
 	unsigned short index;
 	unsigned long long tag;
 	unsigned short valid;
 	unsigned short dirty;
-	
-} cache_entry_t;
+};
 
 
 int calculateInstruction(cache_t cache, char op, unsigned long long address, int bytes);
