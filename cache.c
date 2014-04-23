@@ -25,9 +25,9 @@ void initCache(char *config_file)
     L1d.indexMask     = 0x00000000000000FF;
     L1d.offsetMask    = 0x000000000000001F;
     
-    L1d.tagSize = 51;
-    L1d.indexSize = 8;
-    L1d.offsetSize = 5;
+    L1d.tagSize       = 51;
+    L1d.indexSize     =  8;
+    L1d.offsetSize    =  5;
 
     L1i.blockSize     =   32;
     L1i.cacheSize     = 8192;
@@ -41,25 +41,25 @@ void initCache(char *config_file)
     L1i.indexMask     = 0x00000000000000FF;
     L1i.offsetMask    = 0x000000000000001F;
     
-    L1i.tagSize = 51;
-    L1i.indexSize = 8;
-    L1i.offsetSize = 5;
+    L1i.tagSize       = 51;
+    L1i.indexSize     =  8;
+    L1i.offsetSize    =  5;
 
-    L2.blockSize     =    64;
-    L2.cacheSize     = 32768;
-    L2.assoc         =     1;
-    L2.hitTime       =     5;
-    L2.missTime      =     8;
-    L2.transferTime  =     6;
-    L2.busWidth      =    16;
+    L2.blockSize      =    64;
+    L2.cacheSize      = 32768;
+    L2.assoc          =     1;
+    L2.hitTime        =     5;
+    L2.missTime       =     8;
+    L2.transferTime   =     6;
+    L2.busWidth       =    16;
 
-    L2.tagMask       = 0x0001FFFFFFFFFFFF;
-    L2.indexMask     = 0x00000000000001FF;
-    L2.offsetMask    = 0x000000000000003F;
+    L2.tagMask        = 0x0001FFFFFFFFFFFF;
+    L2.indexMask      = 0x00000000000001FF;
+    L2.offsetMask     = 0x000000000000003F;
     
-    L2.tagSize = 49;
-    L2.indexSize = 9;
-    L2.offsetSize = 6;
+    L2.tagSize        = 49;
+    L2.indexSize      =  9;
+    L2.offsetSize     =  6;
   }
 }
 
