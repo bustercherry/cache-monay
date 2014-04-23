@@ -73,7 +73,7 @@ void destroy_lru(lru_t* lru)
 	while(current != NULL)
 	{
 		free(current);
-		current = (node_t*) current->next;
+		current = current->next;
 	}
 	
 	free(current);
@@ -83,7 +83,7 @@ void destroy_lru(lru_t* lru)
 void append_data(lru_t* lru, unsigned long long data)
 {
 	node_t* new_node = init_node(data);
-	node_t* current = (node_t*) lru->head;
+	node_t* current = lru->head;
 	
 	if(contains(lru, data)) 
 		return;
@@ -99,13 +99,13 @@ void append_data(lru_t* lru, unsigned long long data)
 		{
 			if(current->next == NULL)
 			{
-				current->next = (struct node_t*) new_node;
+				current->next = new_node;
 				lru->current_size++;
 				return;
 			}
 			else
 			{
-				current = (node_t*) current->next;
+				current = current->next;
 			}
 		}
 	}
@@ -114,7 +114,7 @@ void append_data(lru_t* lru, unsigned long long data)
 
 void append_node(lru_t* lru, node_t* node)
 {
-	node_t* current = (node_t*) lru->head;
+	node_t* current = lru->head;
 	
 	if(contains(lru, node->value)) 
 		return;
@@ -130,13 +130,13 @@ void append_node(lru_t* lru, node_t* node)
 		{
 			if(current->next == NULL)
 			{
-				current->next = (struct node_t*) node;
+				current->next = node;
 				lru->current_size++;
 				return;
 			}
 			else
 			{
-				current = (node_t*) current->next;
+				current = current->next;
 			}
 		}
 	}
@@ -164,7 +164,7 @@ node_t remove_head(lru_t* lru)
 	if(lru->head != NULL) 
 	{
 		lru->current_size--;
-		lru->head = (node_t*) lru->head->next;
+		lru->head = lru->head->next;
 	}
 	
 	return current;
@@ -172,7 +172,7 @@ node_t remove_head(lru_t* lru)
 
 int contains(lru_t* lru, int value)
 {
-	node_t* current = (node_t*) lru->head;
+	node_t* current = lru->head;
 	
 	while(current != NULL)
 	{
@@ -182,7 +182,7 @@ int contains(lru_t* lru, int value)
 		}
 		else
 		{
-			current = (node_t*) current->next;
+			current = current->next;
 		}
 	}
 	

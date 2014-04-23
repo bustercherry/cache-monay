@@ -4,13 +4,13 @@
  * 4/17/14
  ***************************/
  
+ typedef struct node_t node_t;
  
- typedef struct
+ struct node_t
  {
 	 unsigned long long value;
-	 struct node_t* next;
-	 
- } node_t;
+	 node_t* next;
+ };
  
  
  typedef struct
