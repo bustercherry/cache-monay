@@ -48,16 +48,20 @@ void initCache(char *config_file)
 int calculateCache(char op, unsigned long long address, int bytes)
 {
   switch(op)
+  {
     case 'I': 
       return calculateInstruction(op, address, bytes);
     case 'R':
       return calculateRead(op, address, bytes);
     case 'W':
       return calculateWrite(op, address, bytes);
+  }
 }
 
-int main()
+int main(int argc, char **argv)
 {
+  printf("%d\n",argc);
+  initCache(NULL);
 
   char op;
   unsigned long long address;
