@@ -2,7 +2,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 
-int main(int argv, char** argc)
+int main(void)
 {
 	lru_t* lru = init_lru(10);
 	int i;
@@ -170,7 +170,7 @@ node_t remove_head(lru_t* lru)
 	return current;
 }
 
-int contains(lru_t* lru, int value)
+int contains(lru_t* lru, unsigned long long value)
 {
 	node_t* current = lru->head;
 	

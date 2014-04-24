@@ -75,5 +75,5 @@ node_t remove_head(lru_t* lru);
  * value. Returns 0 if the value isn't found and 1 if the value is
  * found.
  ********************************************************************/
-int contains(lru_t* lru, int value);
+int contains(lru_t* lru, unsigned long long value);
 

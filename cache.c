@@ -65,7 +65,7 @@ int calculateInstruction(cache_t *cache, char op, unsigned long long address, in
 
 	printf("Ref Type = Inst, Tag = %Lx, Index = %d, Offset = %d\n", tag, index, offset);
 
-  if(cache->entries[index]->tag == tag)
+  if(cache->entries[index].tag == tag)
     return cache->hitTime;
   else
     return cache->missTime + cache->transferTime 

@@ -28,6 +28,6 @@ struct cache_t
 };
 
 
-int calculateInstruction(cache_t cache, char op, unsigned long long address, int bytes);
-int calculateRead(cache_t cache, char op, unsigned long long address, int bytes);
-int calculateWrite(cache_t cache, char op, unsigned long long address, int bytes);
+int calculateInstruction(cache_t *cache, char op, unsigned long long address, int bytes);
+int calculateRead(cache_t *cache, char op, unsigned long long address, int bytes);
+int calculateWrite(cache_t *cache, char op, unsigned long long address, int bytes);
