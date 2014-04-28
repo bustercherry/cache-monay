@@ -7,10 +7,11 @@
 #define HIT 1
 #define MISS 0
 
-#define DEBUG 1
+#define DEBUG
 
 cache_t L1d, L1i, L2;
-int numRead, numWrite, numInst, numHit, numMiss;
+int numRead, numWrite, numInst;
+int numReadCycles, numWriteCycles, numInstCycles;
 
 void incCount(char op)
 {
@@ -22,6 +23,22 @@ void incCount(char op)
               break;
     case 'W': numWrite++;
               break;
+  }
+}
+
+void incCycles(char op, int value)
+{
+  switch(op)
+  {
+    case 'I':
+      numInstCycles += value;
+      break;
+    case 'R':
+      numReadCycles += value;
+      break;
+    case 'W':
+      numWriteCycles += value;
+      break;
   }
 }
 
@@ -54,7 +71,7 @@ int isHit(cache_t *cache, unsigned long long tag, unsigned short index)
   {
     if(cache->entries[index][way].tag == tag)
     {
-      append_data(cache->lru[index], way);
+      //append_data(cache->lru[index], way);
       return 1;
     }
   }
@@ -63,9 +80,9 @@ int isHit(cache_t *cache, unsigned long long tag, unsigned short index)
 
 void updateTag(cache_t *cache, unsigned long long tag, unsigned short index)
 {
-  node_t node = remove_head(cache->lru[index]);
-  append_data(cache->lru[index], node.value);
-  cache->entries[index][node.value].tag = tag;
+  int value = remove_head(cache->lru[index]);
+  append_data(cache->lru[index], value);
+  cache->entries[index][value].tag = tag;
 }
 
 int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
@@ -74,11 +91,10 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
 
 	volatile unsigned long long tag = (address >> (64 - cache->tagSize));
 	volatile unsigned short index = (address >> cache->offsetSize) & cache->indexMask;
-	volatile unsigned short offset = address & cache->offsetMask;
 
   if(isHit(cache, tag, index))
   {
-    #if DEBUG
+    #ifdef DEBUG
 	  //printf("Ref Type = %s, Address = %Lx, Tag = %Lx, \n", getType(op), address, tag);
     //printf("Bytes = %d, Index = %d, Offset = %d, HIT\n", bytes, index, offset);
     printf("Level %s access addr = %Lx, reftype = %s\n", cache->name, address, getType(op));
@@ -86,13 +102,15 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
     printf("Add %s hit time (+ %d)\n", cache->name, cache->hitTime);
     printf("Simulated time = %d\n", cache->hitTime + cache->transferTime);
     #endif
-    numHit++;
+    
+    cache->hits++;
+    
     return cache->hitTime + cache->transferTime;
   }
   else
   {
     int nextTime = calculate(cache->nextLevel, op, address, bytes);
-    #if DEBUG
+    #ifdef DEBUG
 	  //printf("Ref Type = %s, Address = %Lx, Tag = %Lx, \n", getType(op), address, tag);
     //printf("Bytes = %d, Index = %d, Offset = %d, MISS\n", bytes, index, offset);
     printf("Level %s access addr = %Lx, reftype = %s\n", cache->name, address, getType(op));
@@ -104,7 +122,10 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
     #endif
 
     updateTag(cache, tag, index);
-    numMiss++;
+    
+    cache->misses++;
+    cache->transfers++;
+    
     return cache->missTime 
          + cache->transferTime
          + cache->hitTime
@@ -115,10 +136,9 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
 
 int splitReference(cache_t *cache, char op, unsigned long long address, int bytes)
 {
-	//volatile unsigned short offset = address & 0xF;
   int tmpBytes = bytes, tot = 0, bytesTot = 0;
   
-  #if DEBUG
+  #ifdef DEBUG
   printf("Unmodified address: %Lx\n", address);
   #endif
 
@@ -148,21 +168,20 @@ int splitReference(cache_t *cache, char op, unsigned long long address, int byte
       }
     }
   }
-
-  //while(bytes + offset > 4)
-  //{
-    //tmpBytes = (cache->blockSize - offset);
-    
-    //tot += calculate(cache, op, address, tmpBytes);
-
-    //address += tmpBytes;
-    //offset = address & cache->offsetMask;
-    //bytes -= tmpBytes;
-  //}
   
-  
-  /* calculate last chunk */
+  incCycles(op, tot);
+
   return tot;
+}
+
+void print_cache(cache_t cache)
+{
+  float total = cache.hits + cache.misses;
+  printf("  Hits   =  %10d  [%0.2f%%]\n  Misses =  %10d  [%0.2f%%]\n  Total  =  %10d\n", 
+         cache.hits, 100*(cache.hits/total), cache.misses, 
+         100*(cache.misses/total), cache.hits + cache.misses);
+  printf("  kickouts = %d, dirty kickouts = %d, transfers = %d\n", 
+         cache.kickouts, cache.dirtyKickouts, cache.transfers);
 }
 
 int main(int argc, char *argv[])
@@ -185,14 +204,14 @@ int main(int argc, char *argv[])
   {
     incCount(op);
     
-    #if DEBUG
+    #ifdef DEBUG
     printf("-------------------------------------------------------\n");
     printf("Ref %d: Addr = %Lx, Type = %c, BSize = %d\n", refNum, address, op, bytes);
     #endif
     
     totalTime += splitReference(getCache(op), op, address, bytes);
     
-    #if DEBUG
+    #ifdef DEBUG
     printf("Total time so far: %d\n", totalTime);
     printf("-------------------------------------------------------\n");
     #endif
@@ -202,11 +221,27 @@ int main(int argc, char *argv[])
   
   float total = numRead + numWrite + numInst;
   
-  printf("Number of reads:  %d    [%0.2f%%]\n", numRead, 100 * (numRead/total));
-  printf("Number of writes: %d    [%0.2f%%]\n", numWrite, 100 * (numWrite/total));
-  printf("Number of inst:   %d    [%0.2f%%]\n", numInst, 100 * (numInst/total));
-  printf("Number of hits:   %d    [%0.2f%%]\n", numHit, 100 * (numHit/total));
-  printf("Total execution time: %d\n", totalTime);
+  printf("Number of reference types: \n");
+  printf("Number of reads   = %10d  [%0.2f%%]\n", numRead,   100 * (numRead/total));
+  printf("Number of writes  = %10d  [%0.2f%%]\n", numWrite,  100 * (numWrite/total));
+  printf("Number of inst    = %10d  [%0.2f%%]\n", numInst,   100 * (numInst/total));
+  printf("Total             = %10d\n", (int) total);
+  
+  total = (float) totalTime;
+  printf("\nTotal cycles for all activities: \n");
+  printf("Cycles for reads  =  %10d  [%0.2f%%]\n", numReadCycles, 100 * (numReadCycles/total));
+  printf("Cycles for writes =  %10d  [%0.2f%%]\n", numWriteCycles, 100 * (numWriteCycles/total));
+  printf("Cycles for inst   =  %10d  [%0.2f%%]\n", numInstCycles, 100 * (numInstCycles/total));
+  printf("Total time        =  %10d\n", totalTime);
+  
+  printf("\nMemory Level: L1i \n");
+  print_cache(L1i);
+  printf("\nMemory Level: L1d \n");
+  print_cache(L1d);
+  printf("\nMemory Level: L2 \n");
+  print_cache(L2);
+  printf("\n");       
+  
 
   return 0;
 }

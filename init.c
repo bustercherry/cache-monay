@@ -44,6 +44,12 @@ void dynamicConfig(cache_t *cache)
   cache->offsetSize = intLog2(cache->blockSize);
   cache->offsetMask = (unsigned long long)0xFFFFFFFFFFFFFFFF >> (64 - cache->offsetSize);
   cache->tagSize = 64 - indexBits - cache->offsetSize;
+  
+  cache->hits = 0;
+  cache->misses = 0;
+  cache->kickouts = 0;
+  cache->dirtyKickouts = 0;
+  cache->transfers = 0;
 
   #ifdef DEBUG
   printf("cacheSize: %d\tblockSize: %d\n", cache->cacheSize, cache->blockSize);

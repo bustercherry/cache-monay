@@ -140,32 +140,18 @@ void append_node(lru_t* lru, node_t* node)
 	}
 }
 
-node_t clone_node(node_t* node)
+int remove_head(lru_t* lru)
 {
-	node_t new_node;
-	
-	if(node != NULL)
-	{
-		new_node.value = node->value;
-		new_node.next = node->next;
-		
-		free(node);
-	}	
-	
-	return new_node;
-}
-
-node_t remove_head(lru_t* lru)
-{
-	node_t current = clone_node(lru->head);	
+  int value = 0;
 	
 	if(lru->head != NULL) 
 	{
+    value = lru->head->value;
 		lru->current_size--;
 		lru->head = lru->head->next;
 	}
 	
-	return current;
+	return value;
 }
 
 int contains(lru_t* lru, int value)
