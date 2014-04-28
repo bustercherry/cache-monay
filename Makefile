@@ -6,7 +6,7 @@ LMATH=-lm
 all: lru.o cache
 
 cache: cache.c init.c
-	$(CC) $(CFLAGS) $(LYAML) $^ -o $@
+	$(CC) $(CFLAGS) $^ -o $@ $(LYAML)
 
 lru.o: lru.c
 	$(CC) $(CFLAGS) $^ -o $@
