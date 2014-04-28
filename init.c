@@ -42,7 +42,6 @@ void dynamicConfig(cache_t *cache)
   unsigned int indexBits = intLog2(numBlocks);
   cache->indexMask = (unsigned long long)0xFFFFFFFFFFFFFFFF >> (64 - indexBits);
   cache->offsetSize = intLog2(cache->blockSize);
-  cache->offsetMask = (unsigned long long)0xFFFFFFFFFFFFFFFF >> (64 - cache->offsetSize);
   cache->tagSize = 64 - indexBits - cache->offsetSize;
   
   cache->hits = 0;
@@ -54,8 +53,7 @@ void dynamicConfig(cache_t *cache)
   #ifdef DEBUG
   printf("cacheSize: %d\tblockSize: %d\n", cache->cacheSize, cache->blockSize);
   printf("indexBits: %d\tindexMask: %Lx\n", indexBits, cache->indexMask);
-  printf("offsetMask: %Lx\toffsetSize: %d\n", cache->offsetMask, cache->offsetSize);
-  printf("tagSize: %d\n", cache->tagSize);
+  printf("offsetSize: %d\ttagSize: %d\n", cache->offsetSize, cache->tagSize);
   #endif
 
   int i;

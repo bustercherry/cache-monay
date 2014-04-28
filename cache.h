@@ -29,7 +29,6 @@ struct cache_t
   int transfers;
 
   unsigned long long indexMask;
-  unsigned long long offsetMask;
   
   int tagSize;
   int offsetSize;
