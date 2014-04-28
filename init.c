@@ -38,7 +38,7 @@ void dynamicConfig(cache_t *cache)
 {
   initEntries(cache);
 
-  int numBlocks = cache->cacheSize/cache->blockSize;
+  int numBlocks = cache->cacheSize/ (cache->blockSize * cache->assoc);
   unsigned int indexBits = intLog2(numBlocks);
   cache->indexMask = (unsigned long long)0xFFFFFFFFFFFFFFFF >> (64 - indexBits);
   cache->offsetSize = intLog2(cache->blockSize);
