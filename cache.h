@@ -23,11 +23,15 @@ struct cache_t
   int tagSize;
   int offsetSize;
 
-  cache_entry_t *entries;
+  cache_entry_t **entries;
   cache_t *nextLevel;
 };
 
 
-int calculateInstruction(cache_t *cache, char op, unsigned long long address, int bytes);
-int calculateRead(cache_t *cache, char op, unsigned long long address, int bytes);
-int calculateWrite(cache_t *cache, char op, unsigned long long address, int bytes);
+int calculate(cache_t*, char, unsigned long long, int);
+void incCount(char);
+char *getType(char);
+cache_t *getCache(char);
+int isHit(cache_t*, unsigned long long, unsigned short);
+void updateTag(cache_t*, unsigned long long, unsigned short);
+int splitReference(cache_t*, char, unsigned long long, int);
