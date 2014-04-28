@@ -1,3 +1,5 @@
+#include "lru.h"
+
 typedef struct cache_entry_t cache_entry_t;
 struct cache_entry_t
 {
@@ -9,6 +11,8 @@ struct cache_entry_t
 typedef struct cache_t cache_t;
 struct cache_t
 {
+  char *name;
+
   int blockSize;
   int cacheSize;
   int assoc;
@@ -26,6 +30,8 @@ struct cache_t
 
   cache_entry_t **entries;
   cache_t *nextLevel;
+
+  lru_t **lru;
 };
 
 

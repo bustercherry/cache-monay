@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "stdio.h"
 
+/*
 int main(void)
 {
 	lru_t* lru = init_lru(10);
@@ -25,6 +26,7 @@ int main(void)
 	
 	return 0;
 }
+*/
 
 void print_lru(lru_t* lru)
 {

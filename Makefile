@@ -1,12 +1,13 @@
 CC=gcc
-CFLAGS=-Wall -Wextra
+CFLAGS=-c -Wall -Wextra
+LFLAGS=-Wall -Wextra
 LYAML=-lyaml
 LMATH=-lm
 
 all: lru.o cache
 
-cache: cache.c init.c
-	$(CC) $(CFLAGS) $^ -o $@ $(LYAML)
+cache: cache.c init.c lru.o
+	$(CC) $(LFLAGS) $^ -o $@ $(LYAML)
 
 lru.o: lru.c
 	$(CC) $(CFLAGS) $^ -o $@

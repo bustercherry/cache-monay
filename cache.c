@@ -53,15 +53,19 @@ int isHit(cache_t *cache, unsigned long long tag, unsigned short index)
   for(way = 0; way < cache->assoc; way++)
   {
     if(cache->entries[index][way].tag == tag)
+    {
+      append_data(cache->lru[index], way);
       return 1;
+    }
   }
   return 0;
 }
 
 void updateTag(cache_t *cache, unsigned long long tag, unsigned short index)
 {
-  /* needs lru magic */
-  cache->entries[index][0].tag = tag;
+  node_t node = remove_head(cache->lru[index]);
+  append_data(cache->lru[index], node.value);
+  cache->entries[index][node.value].tag = tag;
 }
 
 int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
@@ -75,22 +79,37 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
   if(isHit(cache, tag, index))
   {
     #if DEBUG
-	  printf("Ref Type = %s, Address = %Lx, Tag = %Lx, \n", getType(op), address, tag);
-    printf("Bytes = %d, Index = %d, Offset = %d, HIT\n", bytes, index, offset);
+	  //printf("Ref Type = %s, Address = %Lx, Tag = %Lx, \n", getType(op), address, tag);
+    //printf("Bytes = %d, Index = %d, Offset = %d, HIT\n", bytes, index, offset);
+    printf("Level %s access addr = %Lx, reftype = %s\n", cache->name, address, getType(op));
+    printf("    index = %x, tag = %Lx, HIT\n", index, tag);
+    printf("Add %s hit time (+ %d)\n", cache->name, cache->hitTime);
+    printf("Simulated time = %d\n", cache->hitTime + cache->transferTime);
     #endif
     numHit++;
     return cache->hitTime + cache->transferTime;
   }
   else
   {
+    int nextTime = calculate(cache->nextLevel, op, address, bytes);
     #if DEBUG
-	  printf("Ref Type = %s, Address = %Lx, Tag = %Lx, \n", getType(op), address, tag);
-    printf("Bytes = %d, Index = %d, Offset = %d, MISS\n", bytes, index, offset);
+	  //printf("Ref Type = %s, Address = %Lx, Tag = %Lx, \n", getType(op), address, tag);
+    //printf("Bytes = %d, Index = %d, Offset = %d, MISS\n", bytes, index, offset);
+    printf("Level %s access addr = %Lx, reftype = %s\n", cache->name, address, getType(op));
+    printf("    index = %x, tag = %Lx, MISS\n", index, tag);
+    printf("Add %s miss time (+ %d)\n", cache->name, cache->missTime);
+    printf("Add %s transfer time (+ %d)\n", cache->name, cache->transferTime);
+    printf("Add %s hit time (+ %d)\n", cache->name, cache->hitTime);
+    printf("Simulated time = %d\n", cache->missTime + cache->transferTime + cache->hitTime + cache->memTime + nextTime);
     #endif
+
     updateTag(cache, tag, index);
     numMiss++;
-    return cache->missTime + cache->transferTime + cache->hitTime + cache->memTime
-         + calculate(cache->nextLevel, op, address, bytes);
+    return cache->missTime 
+         + cache->transferTime
+         + cache->hitTime
+         + cache->memTime
+         + nextTime;
   }
 }
 
@@ -168,7 +187,7 @@ int main(int argc, char *argv[])
     
     #if DEBUG
     printf("-------------------------------------------------------\n");
-    printf("Reference #%d\n", refNum);
+    printf("Ref %d: Addr = %Lx, Type = %c, BSize = %d\n", refNum, address, op, bytes);
     #endif
     
     totalTime += splitReference(getCache(op), op, address, bytes);

@@ -14,6 +14,10 @@ void initCache(char *config_file)
   else
     parseConfig(config_file);
 
+  L1i.name = "L1i";
+  L1d.name = "L1d";
+  L2.name  =  "L2";
+
   L1i.nextLevel = &L2;
   L1d.nextLevel = &L2;
   L2.nextLevel = NULL;
@@ -34,7 +38,8 @@ void dynamicConfig(cache_t *cache)
 {
   initEntries(cache);
 
-  unsigned int indexBits = intLog2(cache->cacheSize/cache->blockSize);
+  int numBlocks = cache->cacheSize/cache->blockSize;
+  unsigned int indexBits = intLog2(numBlocks);
   cache->indexMask = (unsigned long long)0xFFFFFFFFFFFFFFFF >> (64 - indexBits);
   cache->offsetSize = intLog2(cache->blockSize);
   cache->offsetMask = (unsigned long long)0xFFFFFFFFFFFFFFFF >> (64 - cache->offsetSize);
@@ -46,6 +51,14 @@ void dynamicConfig(cache_t *cache)
   printf("offsetMask: %Lx\toffsetSize: %d\n", cache->offsetMask, cache->offsetSize);
   printf("tagSize: %d\n", cache->tagSize);
   #endif
+
+  int i;
+  cache->lru = malloc(sizeof(lru_t*) * numBlocks);
+  for(i = 0; i < numBlocks; i++)
+  {
+    cache->lru[i] = init_lru(cache->assoc);
+  }
+
 }
 
 void initEntries(cache_t *cache)
