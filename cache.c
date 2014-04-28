@@ -1,5 +1,6 @@
 #include "cache.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <math.h>
 
 #define HIT 1
@@ -27,6 +28,9 @@ void initCache(char *config_file)
     L1d.tagSize       = 51;
     L1d.offsetSize    =  5;
 
+    L1d.entries = calloc(sizeof(cache_entry_t), L1d.cacheSize / L1d.blockSize);
+    L1d.nextLevel = &L2;
+
     L1i.blockSize     =   32;
     L1i.cacheSize     = 8192;
     L1i.assoc         =    1;
@@ -41,6 +45,9 @@ void initCache(char *config_file)
     L1i.tagSize       = 51;
     L1i.offsetSize    =  5;
 
+    L1i.entries = calloc(sizeof(cache_entry_t), L1d.cacheSize / L1d.blockSize);
+    L1i.nextLevel = &L2;
+
     L2.blockSize      =    64;
     L2.cacheSize      = 32768;
     L2.assoc          =     1;
@@ -54,11 +61,79 @@ void initCache(char *config_file)
     
     L2.tagSize        = 49;
     L2.offsetSize     =  6;
+
+    L2.entries = calloc(sizeof(cache_entry_t), L1d.cacheSize / L1d.blockSize);
+    L2.nextLevel = NULL;
   }
+}
+
+void incCount(char op)
+{
+  switch(op)
+  {
+    case 'I': numInst++;
+              break;
+    case 'R': numRead++;
+              break;
+    case 'W': numWrite++;
+              break;
+  }
+}
+
+char *getType(char op)
+{
+  switch(op)
+  {
+    case 'I': return "Inst";
+    case 'R': return "Read";
+    case 'W': return "Write";
+  }
+  return "Void";
+}
+
+int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
+{
+  if(cache == NULL) return 0;
+
+  incCount(op);
+
+	volatile unsigned long long tag = (address >> (64 - cache->tagSize));
+	volatile unsigned short index = (address >> cache->offsetSize) & cache->indexMask;
+	volatile unsigned short offset = address & cache->offsetMask;
+
+	printf("Ref Type = %s, Tag = %Lx, Index = %d, Offset = %d\n", getType(op), tag, index, offset);
+
+  if(cache->entries[index].tag == tag)
+    return cache->hitTime;
+  else
+    return cache->missTime + cache->transferTime 
+         + calculateInstruction(cache->nextLevel, op, address, bytes);
+}
+
+int splitReference(cache_t *cache, char op, unsigned long long address, int bytes)
+{
+	volatile unsigned short offset = address & cache->offsetMask;
+  int tmpBytes, tot = 0;
+
+  while(bytes + offset > cache->blockSize)
+  {
+    tmpBytes = (cache->blockSize - offset);
+    tot += calculate(cache, op, address, tmpBytes);
+
+    address += tmpBytes;
+    offset = address & cache->offsetMask;
+    bytes -= tmpBytes;
+  }
+  /* calculate last chunk */
+  return tot + calculate(cache, op, address, bytes);
 }
 
 int calculateInstruction(cache_t *cache, char op, unsigned long long address, int bytes)
 {
+  if(cache == NULL) return 0;
+
+  numInst++;
+
 	volatile unsigned long long tag = (address >> (64 - cache->tagSize));
 	volatile unsigned short index = (address >> cache->offsetSize) & cache->indexMask;
 	volatile unsigned short offset = address & cache->offsetMask;
@@ -111,15 +186,15 @@ int main()
     switch(op)
     {
       case 'I': 
-        ret = calculateInstruction(&L1i, op, address, bytes);
+        ret = splitReference(&L1i, op, address, bytes);
         //if(ret == MISS) calculateInstruction(L2, op, address, bytes);
         break;
       case 'R':
-        ret = calculateRead(&L1d, op, address, bytes);
+        ret = splitReference(&L1d, op, address, bytes);
         //if(ret == MISS) calculateRead(L2, op, address, bytes);
         break;
       case 'W':
-        ret = calculateWrite(&L1d, op, address, bytes);
+        ret = splitReference(&L1d, op, address, bytes);
         //if(ret == MISS) calculateWrite(L2, op, address, bytes);
         break;
     }
