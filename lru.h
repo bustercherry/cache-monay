@@ -8,7 +8,7 @@
  
  struct node_t
  {
-	 unsigned long long value;
+	 int value;
 	 node_t* next;
  };
  
@@ -31,8 +31,7 @@ void print_lru(lru_t* lru);
  * Returns a pointer to a node that is constructed using the given
  * data. The node's 'next' element is left as NULL.
  ********************************************************************/
-node_t* init_node(unsigned long long data);
-
+node_t* init_node(int data);
 
 /********************************************************************
  * Exactly clones a given node pointer and returns just a node.
@@ -57,7 +56,7 @@ void destroy_lru(lru_t* lru);
  * Appends the given data to the lru by constructing a new node and 
  * updating the lru head pointer.
  ********************************************************************/
-void append_data(lru_t* lru, unsigned long long data);
+void append_data(lru_t* lru, int data);
 
 /********************************************************************
  * Appends the given node to the lru by updating the lru head pointer.
@@ -75,5 +74,11 @@ node_t remove_head(lru_t* lru);
  * value. Returns 0 if the value isn't found and 1 if the value is
  * found.
  ********************************************************************/
-int contains(lru_t* lru, unsigned long long value);
+int contains(lru_t* lru, int value);
+
+
+/**********************************************************************
+ * Removes a node at the given offset.
+ *********************************************************************/
+void remove_node(lru_t* lru, int offset);
 

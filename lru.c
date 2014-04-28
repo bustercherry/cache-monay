@@ -7,23 +7,17 @@ int main(void)
 	lru_t* lru = init_lru(10);
 	int i;
 	
-	for(i = 0; i < 50; i++)
-	{
-		append_data(lru, i);
-	}
-	
+	append_data(lru, 0);
+  append_data(lru, 1);
+  append_data(lru, 2);
+  append_data(lru, 3);
+  append_data(lru, 1);
+  append_data(lru, 1);
+  append_data(lru, 0);
+  append_data(lru, 2);
+  
 	print_lru(lru);
-	printf("%d \n", lru->current_size);
-	
-	
-	for(i = 0; i < 60; i++)
-	{
-		remove_head(lru);
-	}
-	
-	print_lru(lru);
-	
-	printf("%d \n", lru->current_size);
+	printf("Current size: %d \n", lru->current_size);
 	printf("Contains 20: %d \n", contains(lru, 20));
 	printf("Contains 1230: %d \n", contains(lru, 1230));
 
@@ -32,21 +26,20 @@ int main(void)
 	return 0;
 }
 
-
 void print_lru(lru_t* lru)
 {
 	node_t* current = lru->head;
 	
 	while(current != NULL)
 	{
-		printf("%Lx ", current->value);
+		printf("%d ", current->value);
 		current = (node_t*) current->next;
 	}
 	
 	printf("\n");
 }
 
-node_t* init_node(unsigned long long value)
+node_t* init_node(int value)
 {
 	node_t* node = malloc(sizeof *node);
 	
@@ -80,13 +73,16 @@ void destroy_lru(lru_t* lru)
 	free(lru);
 }
 
-void append_data(lru_t* lru, unsigned long long data)
+void append_data(lru_t* lru, int data)
 {
 	node_t* new_node = init_node(data);
 	node_t* current = lru->head;
 	
-	if(contains(lru, data)) 
-		return;
+	int ret = contains(lru, data);
+  if(ret != -1)
+  {
+    remove_node(lru, ret);
+  }
 	
 	if(lru->head == NULL)
 	{
@@ -170,21 +166,53 @@ node_t remove_head(lru_t* lru)
 	return current;
 }
 
-int contains(lru_t* lru, unsigned long long value)
+int contains(lru_t* lru, int value)
 {
 	node_t* current = lru->head;
+  int numTimes = 0;
 	
 	while(current != NULL)
 	{
 		if(current->value == value)
 		{
-			return 1;
+			return numTimes;
 		}
 		else
 		{
 			current = current->next;
+      numTimes++;
 		}
 	}
 	
-	return 0;
+	return -1;
 }
+
+void remove_node(lru_t* lru, int offset)
+{
+    node_t* current = lru->head;
+    int numTimes = 0;
+    
+    if(offset == 0)
+    {
+      remove_head(lru);
+      return;
+    }
+    
+    while(current != NULL)
+    {
+      if(numTimes == offset - 1)
+      {
+        current->next = current->next->next;
+        lru->current_size--;
+        break;
+      }
+      else
+      {
+        current = current->next;
+        numTimes++;
+      }
+      
+    }
+    
+}
+
