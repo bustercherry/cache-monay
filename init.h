@@ -1,2 +1,5 @@
-void initCache(char *config_file);
-void initEntries(cache_t *cache);
+void initCache(char*);
+void initEntries(cache_t*);
+void parseConfig(char*);
+void setDefaults();
+void dynamicConfig(cache_t*);

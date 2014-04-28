@@ -146,9 +146,15 @@ int splitReference(cache_t *cache, char op, unsigned long long address, int byte
   return tot;
 }
 
-int main()
+int main(int argc, char *argv[])
 {
-  initCache(NULL);
+  if(argc == 2)
+    initCache(argv[1]);
+  else if(argc == 1)
+    initCache(NULL);
+  else
+    { printf("Bad argument(s)\n"); return 100; }
+
   int totalTime = 0;
   int refNum = 0;
   
