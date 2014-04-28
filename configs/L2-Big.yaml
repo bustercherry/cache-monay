@@ -20,8 +20,8 @@ L1d:
 
 L2:
   blockSize:    64
-  cacheSize: 32768
-  assoc:         4
+  cacheSize: 65536
+  assoc:         1
   hitTime:       5
   missTime:      8
   transferTime: 12
