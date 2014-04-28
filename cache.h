@@ -15,6 +15,7 @@ struct cache_t
   int hitTime;
   int missTime;
   int transferTime;
+  int memTime;
   int busWidth;
 
   unsigned long long indexMask;

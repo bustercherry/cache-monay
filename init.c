@@ -15,6 +15,7 @@ void initCache(char *config_file)
     L1d.missTime      =    1;
     L1d.transferTime  =    0;
     L1d.busWidth      =    0;
+    L1d.memTime       =    0;
 
     L1d.indexMask     = 0x00000000000000FF;
     L1d.offsetMask    = 0x000000000000001F;
@@ -31,6 +32,7 @@ void initCache(char *config_file)
     L1i.missTime      =    1;
     L1i.transferTime  =    0;
     L1i.busWidth      =    0;
+    L1i.memTime       =    0;
 
     L1i.indexMask     = 0x00000000000000FF;
     L1i.offsetMask    = 0x000000000000001F;
@@ -45,8 +47,9 @@ void initCache(char *config_file)
     L2.assoc          =     1;
     L2.hitTime        =     5;
     L2.missTime       =     8;
-    L2.transferTime   =     6;
+    L2.transferTime   =    12;
     L2.busWidth       =    16;
+    L2.memTime        =   140;
 
     L2.indexMask      = 0x00000000000001FF;
     L2.offsetMask     = 0x000000000000003F;

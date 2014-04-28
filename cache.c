@@ -7,8 +7,9 @@
 #define HIT 1
 #define MISS 0
 
-cache_t L1d, L1i, L2;
+#define DEBUG 1
 
+cache_t L1d, L1i, L2;
 int numRead, numWrite, numInst, numHit, numMiss;
 
 void incCount(char op)
@@ -67,52 +68,89 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
 {
   if(cache == NULL) return 0;
 
-  incCount(op);
-
 	volatile unsigned long long tag = (address >> (64 - cache->tagSize));
 	volatile unsigned short index = (address >> cache->offsetSize) & cache->indexMask;
 	volatile unsigned short offset = address & cache->offsetMask;
 
   if(isHit(cache, tag, index))
   {
-	  printf("Ref Type = %s, Tag = %Lx, Index = %d, Offset = %d Hit = Yes\n", 
-           getType(op), tag, index, offset);
+    #if DEBUG
+	  printf("Ref Type = %s, Address = %Lx, Tag = %Lx, \n", getType(op), address, tag);
+    printf("Bytes = %d, Index = %d, Offset = %d, HIT\n", bytes, index, offset);
+    #endif
     numHit++;
-    return cache->hitTime;
+    return cache->hitTime + cache->transferTime;
   }
   else
   {
-	  printf("Ref Type = %s, Tag = %Lx, Index = %d, Offset = %d Hit = No\n", 
-           getType(op), tag, index, offset);
+    #if DEBUG
+	  printf("Ref Type = %s, Address = %Lx, Tag = %Lx, \n", getType(op), address, tag);
+    printf("Bytes = %d, Index = %d, Offset = %d, MISS\n", bytes, index, offset);
+    #endif
     updateTag(cache, tag, index);
     numMiss++;
-    return cache->missTime + cache->transferTime 
+    return cache->missTime + cache->transferTime + cache->hitTime + cache->memTime
          + calculate(cache->nextLevel, op, address, bytes);
   }
 }
 
 int splitReference(cache_t *cache, char op, unsigned long long address, int bytes)
 {
-	volatile unsigned short offset = address & cache->offsetMask;
-  int tmpBytes, tot = 0;
+	//volatile unsigned short offset = address & 0xF;
+  int tmpBytes = bytes, tot = 0, bytesTot = 0;
+  
+  #if DEBUG
+  printf("Unmodified address: %Lx\n", address);
+  #endif
 
-  while(bytes + offset > cache->blockSize)
+  while(tmpBytes > 0)
   {
-    tmpBytes = (cache->blockSize - offset);
-    tot += calculate(cache, op, address, tmpBytes);
-
-    address += tmpBytes;
-    offset = address & cache->offsetMask;
-    bytes -= tmpBytes;
+    if(address % 4 != 0)
+    {
+      address -= 1;
+      bytesTot++;
+    }
+    else
+    {
+      if(bytesTot > 0)
+      {
+        tmpBytes -= (4 - bytesTot);
+        tot += calculate(cache, op, address, bytes);
+        bytes -= (4 - bytesTot);
+        bytesTot = 0;
+        address += 4;
+      }
+      else
+      {
+        tot += calculate(cache, op, address, bytes);
+        tmpBytes -= 4;
+        bytes -= 4;
+        address += 4;
+      }
+    }
   }
+
+  //while(bytes + offset > 4)
+  //{
+    //tmpBytes = (cache->blockSize - offset);
+    
+    //tot += calculate(cache, op, address, tmpBytes);
+
+    //address += tmpBytes;
+    //offset = address & cache->offsetMask;
+    //bytes -= tmpBytes;
+  //}
+  
+  
   /* calculate last chunk */
-  return tot + calculate(cache, op, address, bytes);
+  return tot;
 }
 
 int main()
 {
   initCache(NULL);
-  unsigned long long totalTime;
+  int totalTime = 0;
+  int refNum = 0;
   
   char op;
   unsigned long long address;
@@ -120,7 +158,21 @@ int main()
 
   while(scanf("%c %Lx %d\n", &op, &address, &bytes) == 3) 
   {
-    totalTime += (unsigned long long)splitReference(getCache(op), op, address, bytes);
+    incCount(op);
+    
+    #if DEBUG
+    printf("-------------------------------------------------------\n");
+    printf("Reference #%d\n", refNum);
+    #endif
+    
+    totalTime += splitReference(getCache(op), op, address, bytes);
+    
+    #if DEBUG
+    printf("Total time so far: %d\n", totalTime);
+    printf("-------------------------------------------------------\n");
+    #endif
+    
+    refNum++;
   }
   
   float total = numRead + numWrite + numInst;
@@ -129,7 +181,7 @@ int main()
   printf("Number of writes: %d    [%0.2f%%]\n", numWrite, 100 * (numWrite/total));
   printf("Number of inst:   %d    [%0.2f%%]\n", numInst, 100 * (numInst/total));
   printf("Number of hits:   %d    [%0.2f%%]\n", numHit, 100 * (numHit/total));
-  printf("Total execution time: %llu\n", totalTime);
+  printf("Total execution time: %d\n", totalTime);
 
   return 0;
 }
