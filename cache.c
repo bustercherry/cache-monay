@@ -1,5 +1,6 @@
 #include "cache.h"
 #include "init.h"
+#include "output.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
@@ -10,18 +11,17 @@
 #define DEBUG
 
 cache_t L1d, L1i, L2;
-int numRead, numWrite, numInst;
-int numReadCycles, numWriteCycles, numInstCycles;
+output_t out;
 
 void incCount(char op)
 {
   switch(op)
   {
-    case 'I': numInst++;
+    case 'I': out.numInst++;
               break;
-    case 'R': numRead++;
+    case 'R': out.numRead++;
               break;
-    case 'W': numWrite++;
+    case 'W': out.numWrite++;
               break;
   }
 }
@@ -31,13 +31,13 @@ void incCycles(char op, int value)
   switch(op)
   {
     case 'I':
-      numInstCycles += value;
+      out.numInstCycles += value;
       break;
     case 'R':
-      numReadCycles += value;
+      out.numReadCycles += value;
       break;
     case 'W':
-      numWriteCycles += value;
+      out.numWriteCycles += value;
       break;
   }
 }
@@ -176,17 +176,6 @@ int splitReference(cache_t *cache, char op, unsigned long long address, int byte
   return tot;
 }
 
-void print_cache(cache_t cache)
-{
-  float total = cache.hits + cache.misses;
-  printf("\nMemory level: %s\n", cache.name);
-  printf("  Hits   =  %10d  [%0.2f%%]\n  Misses =  %10d  [%0.2f%%]\n  Total  =  %10d\n", 
-         cache.hits, 100*(cache.hits/total), cache.misses, 
-         100*(cache.misses/total), cache.hits + cache.misses);
-  printf("  kickouts = %d, dirty kickouts = %d, transfers = %d\n", 
-         cache.kickouts, cache.dirtyKickouts, cache.transfers);
-}
-
 int main(int argc, char *argv[])
 {
   if(argc == 2)
@@ -196,8 +185,7 @@ int main(int argc, char *argv[])
   else
     { printf("Bad argument(s)\n"); return 100; }
 
-  unsigned long long totalTime = 0;
-  int refNum = 0;
+  out = init_output(&L1i, &L1d, &L2);
   
   char op;
   unsigned long long address;
@@ -209,39 +197,20 @@ int main(int argc, char *argv[])
     
     #ifdef DEBUG
     printf("-------------------------------------------------------\n");
-    printf("Ref %d: Addr = %Lx, Type = %c, BSize = %d\n", refNum, address, op, bytes);
+    printf("Ref %d: Addr = %Lx, Type = %c, BSize = %d\n", out.numRef, address, op, bytes);
     #endif
     
-    totalTime += (unsigned long long) splitReference(getCache(op), op, address, bytes);
+    out.totalTime += (unsigned long long) splitReference(getCache(op), op, address, bytes);
     
     #ifdef DEBUG
-    printf("Total time so far: %Lu\n", totalTime);
+    printf("Total time so far: %Lu\n", out.totalTime);
     printf("-------------------------------------------------------\n");
     #endif
     
-    refNum++;
+    out.numRef++;
   }
   
-  float total = numRead + numWrite + numInst;
+  print_output(out);
   
-  printf("Number of reference types: \n");
-  printf("Number of reads   = %10d  [%0.2f%%]\n", numRead,   100 * (numRead/total));
-  printf("Number of writes  = %10d  [%0.2f%%]\n", numWrite,  100 * (numWrite/total));
-  printf("Number of inst    = %10d  [%0.2f%%]\n", numInst,   100 * (numInst/total));
-  printf("Total             = %10d\n", (int) total);
-  
-  total = (double) totalTime;
-  printf("\nTotal cycles for all activities: \n");
-  printf("Cycles for reads  =  %10d  [%0.2f%%]\n", numReadCycles, 100 * (numReadCycles/total));
-  printf("Cycles for writes =  %10d  [%0.2f%%]\n", numWriteCycles, 100 * (numWriteCycles/total));
-  printf("Cycles for inst   =  %10d  [%0.2f%%]\n", numInstCycles, 100 * (numInstCycles/total));
-  printf("Total time        =  %10Lx\n", totalTime);
-  
-  print_cache(L1i);
-  print_cache(L1d);
-  print_cache(L2);
-  printf("\n");       
-  
-
   return 0;
 }
