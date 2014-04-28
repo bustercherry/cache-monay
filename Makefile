@@ -1,6 +1,6 @@
 CC=gcc
-CFLAGS=-c -Wall -Wextra
-LFLAGS=-Wall -Wextra
+CFLAGS=-c -g -Wall -Wextra
+LFLAGS=-g -Wall -Wextra
 LYAML=-lyaml
 LMATH=-lm
 

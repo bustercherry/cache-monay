@@ -45,5 +45,5 @@ void incCount(char);
 char *getType(char);
 cache_t *getCache(char);
 int isHit(cache_t*, unsigned long long, unsigned short);
-void updateTag(cache_t*, unsigned long long, unsigned short);
+int updateTag(cache_t*, char, unsigned long long, unsigned short);
 int splitReference(cache_t*, char, unsigned long long, int);

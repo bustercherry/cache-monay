@@ -71,18 +71,20 @@ int isHit(cache_t *cache, unsigned long long tag, unsigned short index)
   {
     if(cache->entries[index][way].tag == tag)
     {
-      //append_data(cache->lru[index], way);
+      append_data(cache->lru[index], way);
       return 1;
     }
   }
   return 0;
 }
 
-void updateTag(cache_t *cache, unsigned long long tag, unsigned short index)
+int updateTag(cache_t *cache, char op, unsigned long long tag, unsigned short index)
 {
   int value = remove_head(cache->lru[index]);
   append_data(cache->lru[index], value);
   cache->entries[index][value].tag = tag;
+  
+  return MISS;
 }
 
 int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
@@ -121,7 +123,7 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
     printf("Simulated time = %d\n", cache->missTime + cache->transferTime + cache->hitTime + cache->memTime + nextTime);
     #endif
 
-    updateTag(cache, tag, index);
+    updateTag(cache, op, tag, index);
     
     cache->misses++;
     cache->transfers++;
@@ -177,6 +179,7 @@ int splitReference(cache_t *cache, char op, unsigned long long address, int byte
 void print_cache(cache_t cache)
 {
   float total = cache.hits + cache.misses;
+  printf("\nMemory level: %s\n", cache.name);
   printf("  Hits   =  %10d  [%0.2f%%]\n  Misses =  %10d  [%0.2f%%]\n  Total  =  %10d\n", 
          cache.hits, 100*(cache.hits/total), cache.misses, 
          100*(cache.misses/total), cache.hits + cache.misses);
@@ -193,7 +196,7 @@ int main(int argc, char *argv[])
   else
     { printf("Bad argument(s)\n"); return 100; }
 
-  int totalTime = 0;
+  unsigned long long totalTime = 0;
   int refNum = 0;
   
   char op;
@@ -209,10 +212,10 @@ int main(int argc, char *argv[])
     printf("Ref %d: Addr = %Lx, Type = %c, BSize = %d\n", refNum, address, op, bytes);
     #endif
     
-    totalTime += splitReference(getCache(op), op, address, bytes);
+    totalTime += (unsigned long long) splitReference(getCache(op), op, address, bytes);
     
     #ifdef DEBUG
-    printf("Total time so far: %d\n", totalTime);
+    printf("Total time so far: %Lu\n", totalTime);
     printf("-------------------------------------------------------\n");
     #endif
     
@@ -227,18 +230,15 @@ int main(int argc, char *argv[])
   printf("Number of inst    = %10d  [%0.2f%%]\n", numInst,   100 * (numInst/total));
   printf("Total             = %10d\n", (int) total);
   
-  total = (float) totalTime;
+  total = (double) totalTime;
   printf("\nTotal cycles for all activities: \n");
   printf("Cycles for reads  =  %10d  [%0.2f%%]\n", numReadCycles, 100 * (numReadCycles/total));
   printf("Cycles for writes =  %10d  [%0.2f%%]\n", numWriteCycles, 100 * (numWriteCycles/total));
   printf("Cycles for inst   =  %10d  [%0.2f%%]\n", numInstCycles, 100 * (numInstCycles/total));
-  printf("Total time        =  %10d\n", totalTime);
+  printf("Total time        =  %10Lx\n", totalTime);
   
-  printf("\nMemory Level: L1i \n");
   print_cache(L1i);
-  printf("\nMemory Level: L1d \n");
   print_cache(L1d);
-  printf("\nMemory Level: L2 \n");
   print_cache(L2);
   printf("\n");       
   
