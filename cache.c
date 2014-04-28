@@ -64,37 +64,55 @@ cache_t *getCache(char op)
   return NULL;
 }
 
-int isHit(cache_t *cache, unsigned long long tag, unsigned short index)
+int isHit(cache_t *cache, unsigned long long tag, unsigned short index, int *way)
 {
-  int way;
-  for(way = 0; way < cache->assoc; way++)
+  for(*way = 0; *way < cache->assoc; (*way)++)
   {
-    if(cache->entries[index][way].tag == tag)
+    if(cache->entries[index][*way].tag == tag)
     {
-      append_data(cache->lru[index], way);
+      append_data(cache->lru[index], *way);
       return 1;
     }
   }
   return 0;
 }
 
-int updateTag(cache_t *cache, char op, unsigned long long tag, unsigned short index)
+int updateTag(cache_t *cache, unsigned long long tag, unsigned short index,
+              unsigned long long address, int *way)
 {
-  int value = remove_head(cache->lru[index]);
-  append_data(cache->lru[index], value);
-  cache->entries[index][value].tag = tag;
+  int time = 0;
+  *way = remove_head(cache->lru[index]);
+  append_data(cache->lru[index], *way);
+
+  if(cache->entries[index][*way].dirty)
+    time = calculate(cache->nextLevel, 'W', address, cache->blockSize);
+
+  cache->entries[index][*way].tag = tag;
+  cache->entries[index][*way].dirty = 0;
   
-  return MISS;
+  return time;
+}
+
+void setDirty(cache_t *cache, unsigned short index, int way)
+{
+  cache->entries[index][way].dirty = 1;
 }
 
 int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
 {
-  if(cache == NULL) return 0;
+  if(cache == NULL) 
+  {
+    if(op == 'W')
+      return L2.memTime;
+    else
+      return 0;
+  }
 
+  int time, way;
 	volatile unsigned long long tag = (address >> (64 - cache->tagSize));
 	volatile unsigned short index = (address >> cache->offsetSize) & cache->indexMask;
 
-  if(isHit(cache, tag, index))
+  if(isHit(cache, tag, index, &way))
   {
     #ifdef DEBUG
 	  //printf("Ref Type = %s, Address = %Lx, Tag = %Lx, \n", getType(op), address, tag);
@@ -107,7 +125,7 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
     
     cache->hits++;
     
-    return cache->hitTime + cache->transferTime;
+    time = cache->hitTime + cache->transferTime;
   }
   else
   {
@@ -120,20 +138,29 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
     printf("Add %s miss time (+ %d)\n", cache->name, cache->missTime);
     printf("Add %s transfer time (+ %d)\n", cache->name, cache->transferTime);
     printf("Add %s hit time (+ %d)\n", cache->name, cache->hitTime);
-    printf("Simulated time = %d\n", cache->missTime + cache->transferTime + cache->hitTime + cache->memTime + nextTime);
+    printf("Simulated time = %d\n", cache->missTime
+                                  + cache->transferTime
+                                  + cache->hitTime
+                                  + cache->memTime
+                                  + nextTime);
     #endif
 
-    updateTag(cache, op, tag, index);
+    
     
     cache->misses++;
     cache->transfers++;
     
-    return cache->missTime 
+    time = updateTag(cache, tag, index, address, &way)
+         + cache->missTime 
          + cache->transferTime
          + cache->hitTime
          + cache->memTime
          + nextTime;
   }
+
+  if(op == 'W') setDirty(cache, index, way);
+
+  return time;
 }
 
 int splitReference(cache_t *cache, char op, unsigned long long address, int bytes)

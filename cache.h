@@ -44,6 +44,6 @@ int calculate(cache_t*, char, unsigned long long, int);
 void incCount(char);
 char *getType(char);
 cache_t *getCache(char);
-int isHit(cache_t*, unsigned long long, unsigned short);
-int updateTag(cache_t*, char, unsigned long long, unsigned short);
+int isHit(cache_t*, unsigned long long, unsigned short, int*);
+int updateTag(cache_t*, unsigned long long, unsigned short, unsigned long long, int*);
 int splitReference(cache_t*, char, unsigned long long, int);
