@@ -87,9 +87,13 @@ int updateTag(cache_t *cache, unsigned long long tag, unsigned short index,
   else
   {
     *way = remove_head(cache->lru[index]);
+     cache->kickouts++;
 
     if(cache->entries[index][*way].dirty)
+    {
       time = calculate(cache->nextLevel, 'W', address, cache->blockSize);
+      cache->dirtyKickouts++;
+    }
   }
 
   append_data(cache->lru[index], *way);
