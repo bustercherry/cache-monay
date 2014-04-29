@@ -51,7 +51,7 @@ void print_cache(cache_t *cache)
   printf("  Hits   =  %10d  [%0.2f%%]\n  Misses =  %10d  [%0.2f%%]\n  Total  =  %10d\n", 
          cache->hits, 100*(cache->hits/total), cache->misses, 
          100*(cache->misses/total), cache->hits + cache->misses);
-  printf("  K-k-k-k-kickouts = %d, D-d-d-dirty kickouts = %d, T-t-transfers = %d\n", 
+  printf("  Kickouts = %d, Dirty kickouts = %d, Transfers = %d\n", 
          cache->kickouts, cache->dirtyKickouts, cache->transfers);
 }
 

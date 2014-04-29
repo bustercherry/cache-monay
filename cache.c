@@ -8,7 +8,7 @@
 #define HIT 1
 #define MISS 0
 
-#define DEBUG
+//#define DEBUG
 
 cache_t L1d, L1i, L2;
 output_t out;
