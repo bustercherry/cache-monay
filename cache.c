@@ -211,7 +211,7 @@ int main(int argc, char *argv[])
   else
     { printf("Bad argument(s)\n"); return 100; }
 
-  out = init_output(&L1i, &L1d, &L2);
+  out = init_output(&L1i, &L1d, &L2, argv[1]);
   
   char op;
   unsigned long long address;
