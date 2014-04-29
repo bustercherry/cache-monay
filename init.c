@@ -3,7 +3,7 @@
 #include "init.h"
 #include <yaml.h>
 
-#define DEBUG
+//#define DEBUG
 
 extern cache_t L1d, L1i, L2;
 
@@ -78,6 +78,7 @@ void initEntries(cache_t *cache)
     for(way = 0; way < cache->assoc; way++)
     {
       cache->entries[set][way].tag = 0xFFFFFFFFFFFFFFFF;
+      cache->entries[set][way].dirty = 0;
     }
   }
 }

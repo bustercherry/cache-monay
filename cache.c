@@ -8,7 +8,7 @@
 #define HIT 1
 #define MISS 0
 
-#define DEBUG
+//#define DEBUG
 
 cache_t L1d, L1i, L2;
 output_t out;
@@ -81,11 +81,18 @@ int updateTag(cache_t *cache, unsigned long long tag, unsigned short index,
               unsigned long long address, int *way)
 {
   int time = 0;
-  *way = remove_head(cache->lru[index]);
-  append_data(cache->lru[index], *way);
 
-  if(cache->entries[index][*way].dirty)
-    time = calculate(cache->nextLevel, 'W', address, cache->blockSize);
+  if(cache->lru[index]->current_size < cache->assoc)
+    *way = cache->lru[index]->current_size;
+  else
+  {
+    *way = remove_head(cache->lru[index]);
+
+    if(cache->entries[index][*way].dirty)
+      time = calculate(cache->nextLevel, 'W', address, cache->blockSize);
+  }
+
+  append_data(cache->lru[index], *way);
 
   cache->entries[index][*way].tag = tag;
   cache->entries[index][*way].dirty = 0;
@@ -129,7 +136,6 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
   }
   else
   {
-    int nextTime = calculate(cache->nextLevel, op, address, bytes);
     #ifdef DEBUG
 	  //printf("Ref Type = %s, Address = %Lx, Tag = %Lx, \n", getType(op), address, tag);
     //printf("Bytes = %d, Index = %d, Offset = %d, MISS\n", bytes, index, offset);
@@ -138,14 +144,7 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
     printf("Add %s miss time (+ %d)\n", cache->name, cache->missTime);
     printf("Add %s transfer time (+ %d)\n", cache->name, cache->transferTime);
     printf("Add %s hit time (+ %d)\n", cache->name, cache->hitTime);
-    printf("Simulated time = %d\n", cache->missTime
-                                  + cache->transferTime
-                                  + cache->hitTime
-                                  + cache->memTime
-                                  + nextTime);
     #endif
-
-    
     
     cache->misses++;
     cache->transfers++;
@@ -155,7 +154,7 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
          + cache->transferTime
          + cache->hitTime
          + cache->memTime
-         + nextTime;
+         + calculate(cache->nextLevel, 'R', address, bytes);
   }
 
   if(op == 'W') setDirty(cache, index, way);
@@ -230,7 +229,7 @@ int main(int argc, char *argv[])
     out.totalTime += (unsigned long long) splitReference(getCache(op), op, address, bytes);
     
     #ifdef DEBUG
-    printf("Total time so far: %Lu\n", out.totalTime);
+    printf("Simulated time = %Lu\n", out.totalTime);
     printf("-------------------------------------------------------\n");
     #endif
     
