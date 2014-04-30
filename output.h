@@ -4,8 +4,8 @@ struct output_t
 {
   cache_t *L1d, *L1i, *L2;
   char *configName;
-  int numRead, numWrite, numInst, numRef;
-  int numReadCycles, numWriteCycles, numInstCycles;
+  unsigned long long numRead, numWrite, numInst, numRef;
+  unsigned long long numReadCycles, numWriteCycles, numInstCycles;
   unsigned long long totalTime;
 };
 

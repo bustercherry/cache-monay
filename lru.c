@@ -32,8 +32,6 @@ void print_lru(lru_t* lru)
 {
 	node_t* current = lru->head;
   
-  printf("%d: ", lru->current_size);
-	
 	while(current != NULL)
 	{
 		printf("%d ", current->value);

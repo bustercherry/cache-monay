@@ -29,7 +29,7 @@ int print_cost(cache_t *cache, int type)
   {
     int nfk = (cache->cacheSize/4096);
     int cost = 100 * nfk + 100 * nfk * (cache->assoc/2);
-    printf("%s cache cost = $%d \n", cache->name, cost);
+    printf("  %s cache cost = $%d \n", cache->name, cost);
     return cost;
   }
   else
@@ -37,7 +37,7 @@ int print_cost(cache_t *cache, int type)
     int nfk = (cache->cacheSize/65536);
     if(nfk == 0) nfk++;
     int cost = 50 * nfk + 50 * nfk * (cache->assoc/2);
-    printf("%s cache cost = $%d \n", cache->name, cost);
+    printf("  %s  cache cost = $%d \n", cache->name, cost);
     
     return cost;
   }
@@ -48,29 +48,28 @@ void print_cache(cache_t *cache)
 {
   float total = cache->hits + cache->misses;
   printf("\nMemory level: %s\n", cache->name);
-  printf("  Hits   =  %10d  [%0.2f%%]\n  Misses =  %10d  [%0.2f%%]\n  Total  =  %10d\n", 
+  printf("  Hits   =  %10Lu  [%0.2f%%]\n  Misses =  %10Lu  [%0.2f%%]\n  Total  =  %10Lu\n", 
          cache->hits, 100*(cache->hits/total), cache->misses, 
          100*(cache->misses/total), cache->hits + cache->misses);
-  printf("  Kickouts = %d, Dirty kickouts = %d, Transfers = %d\n", 
+  printf("  Kickouts = %Lu, Dirty kickouts = %Lu, Transfers = %Lu\n", 
          cache->kickouts, cache->dirtyKickouts, cache->transfers);
 }
 
 void print_output(output_t out)
 {
-  
-  float total = out.numRead + out.numWrite + out.numInst;
+  double total = (double) out.numRef;
   
   printf("Number of reference types: \n");
-  printf("  Number of reads   = %10d  [%0.2f%%]\n", out.numRead,   100 * (out.numRead/total));
-  printf("  Number of writes  = %10d  [%0.2f%%]\n", out.numWrite,  100 * (out.numWrite/total));
-  printf("  Number of inst    = %10d  [%0.2f%%]\n", out.numInst,   100 * (out.numInst/total));
-  printf("  Total             = %10d\n", (int) total);
+  printf("  Number of reads   =  %10Lu  [%0.2f%%]\n", out.numRead,   100 * (out.numRead/total));
+  printf("  Number of writes  =  %10Lu  [%0.2f%%]\n", out.numWrite,  100 * (out.numWrite/total));
+  printf("  Number of inst    =  %10Lu  [%0.2f%%]\n", out.numInst,   100 * (out.numInst/total));
+  printf("  Total             =  %10Lu\n", (unsigned long long) total);
   
   total = (double) out.totalTime;
   printf("\nTotal cycles for all activities: \n");
-  printf("  Cycles for reads  =  %10d  [%0.2f%%]\n", out.numReadCycles, 100 * (out.numReadCycles/total));
-  printf("  Cycles for writes =  %10d  [%0.2f%%]\n", out.numWriteCycles, 100 * (out.numWriteCycles/total));
-  printf("  Cycles for inst   =  %10d  [%0.2f%%]\n", out.numInstCycles, 100 * (out.numInstCycles/total));
+  printf("  Cycles for reads  =  %10Lu  [%0.2f%%]\n", out.numReadCycles, 100 * (out.numReadCycles/total));
+  printf("  Cycles for writes =  %10Lu  [%0.2f%%]\n", out.numWriteCycles, 100 * (out.numWriteCycles/total));
+  printf("  Cycles for inst   =  %10Lu  [%0.2f%%]\n", out.numInstCycles, 100 * (out.numInstCycles/total));
   printf("  Total time        =  %10Lu\n", out.totalTime);
   
   printf("\nAverage cycles per activity:\n");
@@ -83,14 +82,14 @@ void print_output(output_t out)
   print_cache(out.L2);
   
   int totalCost = 0;
-  printf("\n");
+  printf("\nCost analysis: \n");
   totalCost += print_cost(out.L1d, 0);
   totalCost += print_cost(out.L1i, 0);
   totalCost += print_cost(out.L2, 1);
   totalCost += 75;
   
-  printf("Memory cost = $75\n");
-  printf("Total cost = $%d\n", totalCost);
+  printf("  Memory cost    = $75\n");
+  printf("  Total cost     = $%d\n", totalCost);
   
   printf("\n");       
 }

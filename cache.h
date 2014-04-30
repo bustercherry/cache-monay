@@ -23,11 +23,11 @@ struct cache_t
   int memTime;
   int busWidth;
   
-  int hits;
-  int misses;
-  int kickouts;
-  int dirtyKickouts;
-  int transfers;
+  unsigned long long hits;
+  unsigned long long misses;
+  unsigned long long kickouts;
+  unsigned long long dirtyKickouts;
+  unsigned long long transfers;
 
   unsigned long long indexMask;
   

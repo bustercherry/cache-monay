@@ -5,42 +5,10 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define HIT 1
-#define MISS 0
-
 //#define DEBUG
 
 cache_t L1d, L1i, L2;
 output_t out;
-
-void incCount(char op)
-{
-  switch(op)
-  {
-    case 'I': out.numInst++;
-              break;
-    case 'R': out.numRead++;
-              break;
-    case 'W': out.numWrite++;
-              break;
-  }
-}
-
-void incCycles(char op, int value)
-{
-  switch(op)
-  {
-    case 'I':
-      out.numInstCycles += value;
-      break;
-    case 'R':
-      out.numReadCycles += value;
-      break;
-    case 'W':
-      out.numWriteCycles += value;
-      break;
-  }
-}
 
 char *getType(char op)
 {
@@ -51,17 +19,6 @@ char *getType(char op)
     case 'W': return "Write";
   }
   return "Void";
-}
-
-cache_t *getCache(char op)
-{
-  switch(op)
-  {
-    case 'I': return &L1i;
-    case 'R': return &L1d;
-    case 'W': return &L1d;
-  }
-  return NULL;
 }
 
 int isHit(cache_t *cache, unsigned long long tag, unsigned short index, int *way)
@@ -204,7 +161,7 @@ int splitReference(cache_t *cache, char op, unsigned long long address, int byte
     }
   }
   
-  incCycles(op, tot);
+  //incCycles(op, tot);
 
   return tot;
 }
@@ -223,24 +180,44 @@ int main(int argc, char *argv[])
   char op;
   unsigned long long address;
   int bytes;
+  
+  unsigned long long refTime = 0;
 
   while(scanf("%c %Lx %d\n", &op, &address, &bytes) == 3) 
   {
-    incCount(op);
-    
     #ifdef DEBUG
     printf("-------------------------------------------------------\n");
-    printf("Ref %d: Addr = %Lx, Type = %c, BSize = %d\n", out.numRef, address, op, bytes);
+    printf("Ref %Lu: Addr = %Lx, Type = %c, BSize = %d\n", out.numRef, address, op, bytes);
     #endif
     
-    out.totalTime += (unsigned long long) splitReference(getCache(op), op, address, bytes);
+    switch(op)
+    {
+      case 'I':
+        out.numInst++;
+        refTime = (unsigned long long) splitReference(&L1i, op, address, bytes);
+        out.totalTime += refTime;
+        out.numInstCycles += refTime;
+        break;
+      case 'R':
+        out.numRead++;
+        refTime = (unsigned long long) splitReference(&L1d, op, address, bytes);
+        out.totalTime += refTime;
+        out.numReadCycles += refTime;
+        break;
+      case 'W':
+        out.numWrite++;
+        refTime = (unsigned long long) splitReference(&L1d, op, address, bytes);
+        out.totalTime += refTime;
+        out.numWriteCycles += refTime;
+        break;
+     }
+        
+    out.numRef++;
     
     #ifdef DEBUG
     printf("Simulated time = %Lu\n", out.totalTime);
-    printf("-------------------------------------------------------\n");
     #endif
     
-    out.numRef++;
   }
   
   print_output(out);
@@ -248,8 +225,6 @@ int main(int argc, char *argv[])
   free_cache(&L1i);
   free_cache(&L1d);
   free_cache(&L2);
-  
-  
   
   return 0;
 }

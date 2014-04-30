@@ -16,7 +16,7 @@ void initCache(char *config_file)
 
   L1i.name = "L1i";
   L1d.name = "L1d";
-  L2.name  =  "L2";
+  L2.name  = "L2";
 
   L1i.nextLevel = &L2;
   L1d.nextLevel = &L2;
