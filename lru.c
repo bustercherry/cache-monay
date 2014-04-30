@@ -146,9 +146,12 @@ int remove_head(lru_t* lru)
 	
 	if(lru->head != NULL) 
 	{
+    node_t *temp = lru->head;
     value = lru->head->value;
 		lru->current_size--;
 		lru->head = lru->head->next;
+    
+    free(temp);
 	}
 	
 	return value;
@@ -190,8 +193,10 @@ void remove_node(lru_t* lru, int offset)
     {
       if(numTimes == offset - 1)
       {
+        node_t *temp = current->next;
         current->next = current->next->next;
         lru->current_size--;
+        free(temp);
         break;
       }
       else
