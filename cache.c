@@ -83,21 +83,24 @@ int updateTag(cache_t *cache, unsigned long long tag, unsigned short index,
   int time = 0;
 
   if(cache->lru[index]->current_size < cache->assoc)
+  {
     *way = cache->lru[index]->current_size;
+  }
   else
   {
     *way = remove_head(cache->lru[index]);
-     cache->kickouts++;
-
-    if(cache->entries[index][*way].dirty)
+    cache->kickouts++;
+     
+    if(cache->entries[index][*way].dirty == 1)
     {
-      time = calculate(cache->nextLevel, 'W', address, cache->blockSize);
+      time = calculate(cache->nextLevel, 'W', cache->entries[index][*way].address, cache->blockSize);
       cache->dirtyKickouts++;
     }
   }
 
   append_data(cache->lru[index], *way);
 
+  cache->entries[index][*way].address = address;
   cache->entries[index][*way].tag = tag;
   cache->entries[index][*way].dirty = 0;
   
@@ -119,9 +122,9 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
       return 0;
   }
 
-  int time, way;
-	volatile unsigned long long tag = (address >> (64 - cache->tagSize));
-	volatile unsigned short index = (address >> cache->offsetSize) & cache->indexMask;
+  int time = 0, way = 0;
+	unsigned long long tag = (address >> (64 - cache->tagSize));
+	unsigned short index = (address >> cache->offsetSize) & cache->indexMask;
 
   if(isHit(cache, tag, index, &way))
   {
@@ -152,7 +155,7 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
     
     cache->misses++;
     cache->transfers++;
-    
+  
     time = updateTag(cache, tag, index, address, &way)
          + cache->missTime 
          + cache->transferTime
@@ -160,7 +163,7 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
          + cache->memTime
          + calculate(cache->nextLevel, 'R', address, bytes);
   }
-
+  
   if(op == 'W') setDirty(cache, index, way);
 
   return time;
@@ -241,6 +244,12 @@ int main(int argc, char *argv[])
   }
   
   print_output(out);
+  
+  free_cache(&L1i);
+  free_cache(&L1d);
+  free_cache(&L2);
+  
+  
   
   return 0;
 }

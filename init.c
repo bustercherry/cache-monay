@@ -78,6 +78,7 @@ void initEntries(cache_t *cache)
     for(way = 0; way < cache->assoc; way++)
     {
       cache->entries[set][way].tag = 0xFFFFFFFFFFFFFFFF;
+      cache->entries[set][way].address = 0xFFFFFFFFFFFFFFF;
       cache->entries[set][way].dirty = 0;
     }
   }
@@ -166,6 +167,32 @@ void parseConfig(char *file)
 
   fclose(F);
 }
+
+void free_cache(cache_t *cache)
+{
+  
+  int numSets = cache->cacheSize/(cache->blockSize * cache->assoc);
+
+  int set;
+  for(set = 0; set < numSets; set++)
+  {
+    free(cache->entries[set]);
+  }
+  
+  free(cache->entries);
+  
+  int numBlocks = cache->cacheSize/(cache->blockSize * cache->assoc);
+
+  int i;
+  for(i = 0; i < numBlocks; i++)
+  {
+    destroy_lru(cache->lru[i]);
+  }
+  
+  free(cache->lru);
+  
+}
+
 
 void setDefaults()
 {

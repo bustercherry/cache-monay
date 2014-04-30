@@ -4,6 +4,7 @@ typedef struct cache_entry_t cache_entry_t;
 struct cache_entry_t
 {
 	unsigned long long tag;
+  unsigned long long address;
 	unsigned short valid;
 	unsigned short dirty;
 };
