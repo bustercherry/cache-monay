@@ -66,15 +66,15 @@ lru_t* init_lru(int max_size)
 
 void destroy_lru(lru_t* lru)
 {
-	node_t* current = lru->head->next;
+	node_t* temp;
 	
-	while(current != NULL)
+	while(lru->head->next != NULL)
 	{
-		free(current);
-		current = current->next;
+    temp = lru->head->next;
+		lru->head->next = lru->head->next->next;
+    free(temp);
 	}
 	
-	free(current);
 	free(lru);
 }
 

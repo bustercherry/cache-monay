@@ -23,6 +23,7 @@ char *getType(char op)
 
 int isHit(cache_t *cache, unsigned long long tag, unsigned short index, int *way)
 {
+  
   for(*way = 0; *way < cache->assoc; (*way)++)
   {
     if(cache->entries[index][*way].tag == tag)
@@ -78,7 +79,7 @@ int calculate(cache_t *cache, char op, unsigned long long address, int bytes)
     else
       return 0;
   }
-
+  
   int time = 0, way = 0;
 	unsigned long long tag = (address >> (64 - cache->tagSize));
 	unsigned short index = (address >> cache->offsetSize) & cache->indexMask;

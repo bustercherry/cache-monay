@@ -1,6 +1,7 @@
 #include "cache.h"
 #include <stdio.h>
 #include "output.h"
+#include "init.h"
 
 output_t init_output(cache_t *one, cache_t *two, cache_t *three, char* configName)
 {
@@ -28,7 +29,7 @@ int print_cost(cache_t *cache, int type)
   if(type == 0)
   {
     int nfk = (cache->cacheSize/4096);
-    int cost = 100 * nfk + 100 * nfk * (cache->assoc/2);
+    int cost = 100 * nfk + 100 * nfk * intLog2(cache->assoc);
     printf("  %s cache cost = $%d \n", cache->name, cost);
     return cost;
   }
@@ -36,7 +37,7 @@ int print_cost(cache_t *cache, int type)
   {
     int nfk = (cache->cacheSize/65536);
     if(nfk == 0) nfk++;
-    int cost = 50 * nfk + 50 * nfk * (cache->assoc/2);
+    int cost = 50 * nfk + 50 * nfk * intLog2(cache->assoc);
     printf("  %s  cache cost = $%d \n", cache->name, cost);
     
     return cost;

@@ -21,7 +21,7 @@ void initCache(char *config_file)
   L1i.nextLevel = &L2;
   L1d.nextLevel = &L2;
   L2.nextLevel = NULL;
-
+  
   dynamicConfig(&L1i);
   dynamicConfig(&L1d);
   dynamicConfig(&L2);
@@ -40,7 +40,14 @@ void dynamicConfig(cache_t *cache)
 
   int numBlocks = cache->cacheSize/ (cache->blockSize * cache->assoc);
   unsigned int indexBits = intLog2(numBlocks);
-  cache->indexMask = (unsigned long long)0xFFFFFFFFFFFFFFFF >> (64 - indexBits);
+  if(indexBits == 0)
+  {
+    cache->indexMask = (unsigned long long) 0xFFFFFFFFFFFFFFFF >> 63;
+    cache->indexMask >>= 1;
+  }
+  else
+    cache->indexMask = (unsigned long long) 0xFFFFFFFFFFFFFFFF >> (64 - indexBits);
+  
   cache->offsetSize = intLog2(cache->blockSize);
   cache->tagSize = 64 - indexBits - cache->offsetSize;
   
@@ -62,7 +69,7 @@ void dynamicConfig(cache_t *cache)
   {
     cache->lru[i] = init_lru(cache->assoc);
   }
-
+  
 }
 
 void initEntries(cache_t *cache)
