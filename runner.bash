@@ -3,7 +3,8 @@
 for trace in ../traces-long/*; do
   for config  in configs/*; do
   
-    while [ `jobs -l | wc -l` -ge 5 ]; do
+    while [ `jobs -l | wc -l` -ge 10 ]; do
+      #jobs -l
       sleep 300
     done
   
@@ -12,7 +13,7 @@ for trace in ../traces-long/*; do
   
   done
 
-  while [ `jobs -l | wc -l` -gt 0 ]; do
+  while [ `jobs -l | wc -l` -gt 3 ]; do
     jobs -l
     echo "--------------------------------------------------------------------------------"
     sleep 300
