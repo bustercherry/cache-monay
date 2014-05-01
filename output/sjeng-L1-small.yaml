@@ -1,0 +1,42 @@
+Number of reference types: 
+  Number of reads   =  1892411647  [18.92%]
+  Number of writes  =   751653128  [7.52%]
+  Number of inst    =  7355935225  [73.56%]
+  Total             =  10000000000
+
+Total cycles for all activities: 
+  Cycles for reads  =  19225396703  [30.76%]
+  Cycles for writes =  10510471755  [16.82%]
+  Cycles for inst   =  32761006671  [52.42%]
+  Total time        =  62496875129
+
+Average cycles per activity:
+  Read  = 10.16
+  Write = 13.98
+  Inst  = 4.45
+
+Memory level: L1i
+  Hits   =  12181186946  [97.10%]
+  Misses =   363177859  [2.90%]
+  Total  =  12544364805
+  Kickouts = 363177731, Dirty kickouts = 0, Transfers = 363177859
+
+Memory level: L1d
+  Hits   =  3056012220  [90.17%]
+  Misses =   333243063  [9.83%]
+  Total  =  3389255283
+  Kickouts = 333242935, Dirty kickouts = 135165653, Transfers = 333243063
+
+Memory level: L2
+  Hits   =   657535007  [79.07%]
+  Misses =   174051568  [20.93%]
+  Total  =   831586575
+  Kickouts = 174051056, Dirty kickouts = 42644502, Transfers = 174051568
+
+Cost analysis: 
+  L1i cache cost = $100 
+  L1d cache cost = $100 
+  L2  cache cost = $50 
+  Memory cost    = $75
+  Total cost     = $325
+

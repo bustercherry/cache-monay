@@ -1,6 +1,8 @@
 CC=gcc
-CFLAGS=-c -g -Wall -Wextra
-LFLAGS=-g -Wall -Wextra
+#CFLAGS=-c -g -Wall -Wextra
+#LFLAGS=-g -Wall -Wextra
+CFLAGS=-c -march=native -O2 -Wall -Wextra
+LFLAGS=-g -march=native -O2 -Wall -Wextra
 LYAML=-lyaml
 LMATH=-lm
 
