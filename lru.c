@@ -142,32 +142,32 @@ int contains(lru_t* lru, int value)
 
 void remove_node(lru_t* lru, int offset)
 {
-    //node_t* current = lru->head;
-    //int numTimes = 0;
+    node_t* current = lru->head;
+    int numTimes = 0;
     
-    //if(offset == 0)
-    //{
+    if(offset == 0)
+    {
       //remove_head(lru);
-      //return;
-    //}
+      return;
+    }
     
-    //while(current != NULL)
-    //{
-      //if(numTimes == offset - 1)
-      //{
-        //node_t *temp = current->next;
-        //current->next = current->next->next;
-        //lru->current_size--;
-        //free(temp);
-        //break;
-      //}
-      //else
-      //{
-        //current = current->next;
-        //numTimes++;
-      //}
+    while(current != NULL)
+    {
+      if(numTimes == offset - 1)
+      {
+        node_t *temp = current->next;
+        current->next = current->next->next;
+        lru->current_size--;
+        free(temp);
+        break;
+      }
+      else
+      {
+        current = current->next;
+        numTimes++;
+      }
       
-    //}
+    }
     
 }
 
