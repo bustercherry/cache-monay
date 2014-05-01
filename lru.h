@@ -49,18 +49,13 @@ void destroy_lru(lru_t* lru);
  * Appends the given data to the lru by constructing a new node and 
  * updating the lru head pointer.
  ********************************************************************/
-void append_data(lru_t* lru, int data);
-
-/********************************************************************
- * Appends the given node to the lru by updating the lru head pointer.
- ********************************************************************/
-void append_node(lru_t* lru, node_t* node);
+void push_data(lru_t* lru, int value);
 
 /********************************************************************
  * Removes and returns the head of the lru in order to determine which
  * block should be replaced next.
  ********************************************************************/
-int remove_head(lru_t* lru);
+int find_least(lru_t* lru);
 
 /********************************************************************
  * Loops through the lru and checks to see if it contains the given
@@ -68,7 +63,6 @@ int remove_head(lru_t* lru);
  * found.
  ********************************************************************/
 int contains(lru_t* lru, int value);
-
 
 /**********************************************************************
  * Removes a node at the given offset.

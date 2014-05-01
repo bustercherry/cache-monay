@@ -27,7 +27,7 @@ int isHit(cache_t *cache, unsigned long long tag, unsigned short index, int *way
   {
     if(cache->entries[index][*way].tag == tag)
     {
-      append_data(cache->lru[index], *way);
+      push_data(cache->lru[index], *way);
       return 1;
     }
   }
@@ -45,7 +45,7 @@ int updateTag(cache_t *cache, unsigned long long tag, unsigned short index,
   }
   else
   {
-    *way = remove_head(cache->lru[index]);
+    *way = find_least(cache->lru[index]);
     cache->kickouts++;
      
     if(cache->entries[index][*way].dirty == 1)
@@ -55,7 +55,7 @@ int updateTag(cache_t *cache, unsigned long long tag, unsigned short index,
     }
   }
 
-  append_data(cache->lru[index], *way);
+  push_data(cache->lru[index], *way);
 
   cache->entries[index][*way].address = address;
   cache->entries[index][*way].tag = tag;
@@ -161,8 +161,6 @@ int splitReference(cache_t *cache, char op, unsigned long long address, int byte
     }
   }
   
-  //incCycles(op, tot);
-
   return tot;
 }
 
