@@ -22,6 +22,7 @@ struct cache_t
   int transferTime;
   int memTime;
   int busWidth;
+  int memChunkSize;
   
   unsigned long long hits;
   unsigned long long misses;
