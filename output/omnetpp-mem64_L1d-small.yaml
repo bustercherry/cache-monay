@@ -14,6 +14,8 @@ Average cycles per activity:
   Read  = 17.33
   Write = 6.53
   Inst  = 11.46
+Ideal: Exec. Time = 16752816355; CPI = 2.48
+Ideal mis-aligned: Exec. Time = 26618750504; CPI = 3.94
   Ideal execution time   =  16752816355  [CPI 2.48]
   Ideal misaligned time  =  24142954060  [CPI 3.58]
 

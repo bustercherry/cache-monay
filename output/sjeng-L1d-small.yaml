@@ -14,6 +14,8 @@ Average cycles per activity:
   Read  = 9.58
   Write = 13.82
   Inst  = 3.89
+Ideal: Exec. Time = 17355935225; CPI = 2.36
+Ideal mis-aligned: Exec. Time = 24792861569; CPI = 3.37
 
 Memory level: L1i
   Hits   =  12312377087  [98.15%]
