@@ -1,0 +1,29 @@
+L1i:
+  blockSize:   32
+  cacheSize: 8192
+  assoc:      256
+  hitTime:      1
+  missTime:     1
+  transferTime: 0
+  busWidth:     0
+  memTime:      0
+
+L1d:
+  blockSize:   32
+  cacheSize: 8192
+  assoc:      256
+  hitTime:      1
+  missTime:     1
+  transferTime: 0
+  busWidth:     0
+  memTime:      0
+
+L2:
+  blockSize:    64
+  cacheSize: 32768
+  assoc:       512
+  hitTime:       5
+  missTime:      8
+  transferTime: 12
+  busWidth:     16
+  memTime:      80
