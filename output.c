@@ -35,11 +35,9 @@ int print_cost(cache_t *cache, int type)
   }
   else
   {
-    int nfk = (cache->cacheSize/65536);
-    if(nfk == 0) nfk++;
+    int nfk = (cache->cacheSize/32768);
     int cost = 50 * nfk + 50 * nfk * intLog2(cache->assoc);
     printf("  %s  cache cost = $%d \n", cache->name, cost);
-    
     return cost;
   }
     
